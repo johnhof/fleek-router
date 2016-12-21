@@ -26,12 +26,19 @@ describe('Router', () => {
   });
 
   describe('Operation', () => {
-    it('should return middleare which executes the function when the operationId match\'s', (done) => {
+    it('should return middleware which executes the function when the operationId match\'s', (done) => {
       let router = new Router();
       let exec = false;
       let middleware = router.operation('getFoo', (ctx, next) => { exec = true; return next(); });
       let ctx = CTX.get('/foo/me').context(SWAGGER.paths['/foo/{id}'].get);
       middleware(ctx, () => { expect(exec).to.be.true; done(); });
+    });
+    it('should return middleware which bypasses the function when the operationId does not match\'s', (done) => {
+      let router = new Router();
+      let exec = false;
+      let middleware = router.operation('getFoo', (ctx, next) => { exec = true; return next(); });
+      let ctx = CTX.get('/foo/me').context(SWAGGER.paths['/foo/{id}'].update);
+      middleware(ctx, () => { expect(exec).to.be.false; done(); });
     });
   });
 
@@ -42,6 +49,13 @@ describe('Router', () => {
       let middleware = router.tag('authenticated', (ctx, next) => { exec = true; return next(); });
       let ctx = CTX.get('/foo/me').context(SWAGGER.paths['/foo/{id}'].get)
       middleware(ctx, () => { expect(exec).to.be.true; done(); });
+    });
+    it('should return middleare which bypasses the function when the tag is not present', (done) => {
+      let router = new Router();
+      let exec = false;
+      let middleware = router.tag('authenticated', (ctx, next) => { console.log('wtf'); exec = true; return next(); });
+      let ctx = CTX.get('/foo/me').context(SWAGGER.paths['/foo/{id}'].update)
+      middleware(ctx, () => { expect(exec).to.be.false; done(); });
     });
   });
 });
