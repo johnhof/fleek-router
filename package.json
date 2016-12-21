@@ -5,7 +5,7 @@
   "repository": "https://github.com/fleekjs/fleek-router",
   "main": "lib/router.js",
   "scripts": {
-    "test": "snyk test && mocha --harmony tests"
+    "test": "mocha --harmony tests"
   },
   "keywords": [
     "fleek",

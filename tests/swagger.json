@@ -1,0 +1,179 @@
+{
+  "basePath": "/v1",
+  "paths": {
+    "/user/create": {
+      "post": {
+        "summary": "Allows an existing user to create a new proxy user. (PUBLIC)",
+        "description": "Allows an existing user to create a new proxy user.",
+        "tags": [
+          "user",
+          "authenticated"
+        ],
+        "parameters": [{
+          "name": "user",
+          "in": "body",
+          "schema": {
+            "type": "object",
+            "required": ["email", "primary_phone", "birthdate", "name"],
+            "properties": {
+              "email": {
+                "type": "string"
+              },
+              "primary_phone": {
+                "type": "string"
+              },
+              "secondary_phone": {
+                "type": "string"
+              },
+              "birthdate": {
+                "type": "date"
+              },
+              "ssn": {
+                "type": "integer"
+              },
+              "height": {
+                "type": "double"
+              },
+              "gender": {
+                "type": "string",
+                "enum": ["M", "F"]
+              },
+              "nicknames": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "enable_notifications": {
+                "type": "boolean"
+              },
+              "deadline": {
+                "type": "datetime"
+              },
+              "name": {
+                "type": "object",
+                "required": ["first", "last"],
+                "properties": {
+                  "first": {
+                    "type": "string",
+                    "required": true
+                  },
+                  "last": {
+                    "type": "string",
+                    "required": true
+                  }
+                }
+              }
+            }
+          }
+        }]
+      }
+    },
+    "/foo/list": {
+      "get": {
+        "tags": ["foo"],
+        "parameters": [{
+          "name": "skip",
+          "description": "Proxy flag.",
+          "in": "query",
+          "type": "string"
+        }, {
+          "name": "limit",
+          "description": "User's birth date.",
+          "in": "query",
+          "format": "MM/DD/YYYY",
+          "type": "date"
+        }]
+      }
+    },
+    "/foo/{id}": {
+      "get": {
+        "operationId": "getFoo",
+        "tags": ["foo", "authenticated"]
+      }
+    },
+    "/foo/{id}/update": {
+      "put": {
+        "tags": ["foo"]
+      }
+    },
+    "/foo/{id}/remove": {
+      "delete": {
+        "tags": ["foo"]
+      }
+    },
+    "/bar/magic": {
+      "create": {
+        "tags": ["bar"]
+      },
+      "create": {
+        "tags": ["bar"]
+      },
+      "create": {
+        "tags": ["bar"]
+      },
+      "create": {
+        "tags": ["bar"]
+      }
+    }
+  },
+  "definitions": {
+    "user": {
+      "required": ["email", "primary_phone", "birthdate", "name"],
+      "properties": {
+        "email": {
+          "type": "string",
+          "toLowerCase": true
+        },
+        "primary_phone": {
+          "type": "string"
+        },
+        "secondary_phone": {
+          "type": "string"
+        },
+        "birthdate": {
+          "type": "date"
+        },
+        "ssn": {
+          "type": "integer"
+        },
+        "height": {
+          "type": "double"
+        },
+        "gender": {
+          "type": "string",
+          "enum": ["M", "F"]
+        },
+        "nicknames": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "enable_notifications": {
+          "type": "boolean",
+          "default": true
+        },
+        "deadline": {
+          "type": "datetime"
+        },
+        "name": {
+          "type": "object",
+          "required": ["first", "last"],
+          "properties": {
+            "first": {
+              "type": "string",
+              "required": true,
+              "toLowerCase": true
+            },
+            "last": {
+              "type": "string",
+              "required": true,
+              "toLowerCase": true
+            }
+          }
+        }
+      }
+    }
+  }
+}
