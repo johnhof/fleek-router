@@ -33,15 +33,17 @@ app.use(fleekCtx(SWAGGER));
 
 let router = fleekRouter({ controllers: `${__dirname}/controllers` });
 
-router.tag('authenticated', (ctx, next) => {
+ctx.use(router.tag('authenticated', (ctx, next) => {
   if (someAuthFunction(ctx)) {
     ctx.body = 'Not authorized';
     ctx.status = 401;
     return Promise.resolve();
   } else return next();
-});
+}));
 
-app.use(router);
+app.use(router.paths({ swagger: SWAGGER }));
+// OR
+app.use(router.paths(SWAGGER.paths));
 
 app.listen(3000);
 ```
