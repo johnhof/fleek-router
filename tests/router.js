@@ -13,9 +13,6 @@ describe('Router', () => {
       let router = new Router();
       expect(router).instanceof(Router);
       expect(router._opts).to.be.an('object');
-      expect(router._ctrlMap).to.be.an('object')
-      expect(router._ctrlMap).to.be.an('object')
-      expect(router._opMap).to.be.an('object')
     });
   });
 
@@ -66,18 +63,18 @@ describe('Router', () => {
         let router = new Router();
         let map = router._ctrlDirToMap(`${__dirname}/controllers`);
         expect(map).to.be.an('object');
-
         expect(map.controller).to.be.an('object');
-        expect(map.controller['foo.bar']).to.be.an('object');
-        expect(map.controller['foo.bar'].post).to.be.a('function');
-        expect(map.controller['foo.bar'].get).to.be.a('function');
-        expect(map.controller['foo.bar'].put).to.be.a('function');
-        expect(map.controller['foo.bar'].delete).to.be.a('function');
-        expect(map.controller['foo.biz']).to.be.an('object');
-        expect(map.controller['foo.biz'].post).to.be.a('function');
-        expect(map.controller['foo.biz'].get).to.be.a('function');
-        expect(map.controller['foo.biz'].put).to.be.a('function');
-        expect(map.controller['foo.biz'].delete).to.be.a('function');
+
+        expect(map.controller.foo.bar).to.be.an('object');
+        expect(map.controller.foo.bar.post).to.be.a('function');
+        expect(map.controller.foo.bar.get).to.be.a('function');
+        expect(map.controller.foo.bar.put).to.be.a('function');
+        expect(map.controller.foo.bar.delete).to.be.a('function');
+        expect(map.controller.foo.biz).to.be.an('object');
+        expect(map.controller.foo.biz.post).to.be.a('function');
+        expect(map.controller.foo.biz.get).to.be.a('function');
+        expect(map.controller.foo.biz.put).to.be.a('function');
+        expect(map.controller.foo.biz.delete).to.be.a('function');
         expect(map.controller.baz).to.be.an('object');
         expect(map.controller.baz.get).to.be.a('function');
 
