@@ -17,9 +17,83 @@ describe('Router', () => {
   });
 
   describe('Controller', () => {
-    it('should Return a middleware function', () => {
+    it('should take a tag and controller obejct and return a middleware function', () => {
       let router = new Router();
       expect(router).instanceof(Router);
+    });
+  });
+
+  describe('Controllers', () => {
+    it('should take a controllers object and return a middleware function', () => {
+      let router = new Router();
+      expect(router).instanceof(Router);
+      router.controllers({});
+
+      //
+      // TODO: test
+      //
+
+    });
+    it('should take a controllers directory and return a middleware function', (done) => {
+      let router = new Router();
+      expect(router).instanceof(Router);
+      let ctrlDir = `${__dirname}/controllers`;
+      let count = 0;
+      let doneCondition = () => { count++; if (count == 2) done(); };
+      router.controllers(ctrlDir)({}, doneCondition);
+      router.controllers({ path: ctrlDir })({}, doneCondition);
+    });
+    it('should reject invalid parameters', (done) => {
+      let router = new Router();
+      expect(() => router.controllers()).to.throw('requires');
+      expect(() => router.controllers('asdf')).to.throw('ENOENT');
+      expect(() => router.controllers({ path: 'asdf' })).to.throw('ENOENT');
+    });
+    describe('Controllers Middleware', () => {
+      it('should route to flat controller methods', (done) => {
+        let router = new Router();
+        expect(router).instanceof(Router);
+        let ctrlDir = `${__dirname}/controllers`;
+        router.controllers(ctrlDir)(CTX.get('/baz').context(SWAGGER.paths['/baz/list'].get), (ctx) => {
+          if (ctx.called('baz.get')) done();
+          else done('Failed to route');
+        });
+      });
+      it('should route to nested controller methods specified by tag', () => {
+
+        //
+        // TODO: test
+        //
+
+      });
+      it('should route to nested controller methods by tag ignoring unrecognized tags', () => {
+
+        //
+        // TODO: test
+        //
+
+      });
+      it('should route to by operationId', () => {
+
+        //
+        // TODO: test
+        //
+
+      });
+      it('should prioritize operationId over controller namespace', () => {
+
+        //
+        // TODO: test
+        //
+
+      });
+      it('should forward unrecognized routes', () => {
+
+        //
+        // TODO: test
+        //
+
+      });
     });
   });
 

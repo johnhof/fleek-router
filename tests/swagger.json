@@ -69,6 +69,18 @@
         }]
       }
     },
+    "/foo/bar/list": {
+      "get": {
+        "tags": ["foo", "bar", "list"],
+        "parameters": []
+      }
+    },
+    "/baz/list": {
+      "get": {
+        "tags": ["baz", "list"],
+        "parameters": []
+      }
+    },
     "/foo/list": {
       "get": {
         "tags": ["foo"],
