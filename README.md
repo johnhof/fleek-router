@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/fleekjs/fleek-router.svg?branch=master)](https://travis-ci.org/fleekjs/fleek-router)
 
-Middleware and utilities for validating data against [swagger](http://swagger.io/specification/) schema's.
+Middleware for routing to controllers using [swagger](http://swagger.io/specification/) schema's.
 
 Requirements:
 - Node >= 6.0.0
@@ -39,11 +39,33 @@ ctx.use(router.tag('authenticated', (ctx, next) => {
     ctx.status = 401;
     return Promise.resolve();
   } else return next();
+}))
+
+app.use(router.controllers({
+  controller: {
+    bar: {
+      get: (ctx, next) => { /* routes for tags ['bar', ...] and method GET */ },
+    },
+    foo: {
+      biz: {
+        post: (ctx, next) => { /* routes for tags ['foo', 'biz' ...] and method POST */ }
+      }
+    }
+  },
+  operation: {
+    createBar: (ctx, next) => { /* routes for operationId 'createBar' */ }
+  }
 }));
 
-app.use(router.paths({ swagger: SWAGGER }));
 // OR
-app.use(router.paths(SWAGGER.paths));
+
+app.use(router.controllers(`${__driname}/controllers`));
+// TO MATCH EXAMPLE ABOVE:
+// controllers/
+//  ├── bar.js [exports: get(ctx, next)]
+//  ├── foo
+//  |    └── biz [exports: post(ctx, next)]
+//  └── */** [exports: createBar(ctx, next)]
 
 app.listen(3000);
 ```
