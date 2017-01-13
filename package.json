@@ -3,7 +3,7 @@
   "version": "1.2.5",
   "description": "A router for the fleek framework",
   "repository": "https://github.com/fleekjs/fleek-router",
-  "main": "lib/router.js",
+  "main": "index.js",
   "scripts": {
     "test": "mocha --harmony tests"
   },

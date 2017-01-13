@@ -1,5 +1,7 @@
 'use strict';
 
-module.exports = () => {
+const Router = require('./lib/router');
+const  router = new Router();
 
-};
+module.exports = router;
+module.exports.Router = Router;
