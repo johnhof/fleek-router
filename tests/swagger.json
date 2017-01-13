@@ -69,9 +69,16 @@
         }]
       }
     },
+    "/foo/bar/search": {
+      "get": {
+        "operationId": "searchFooBar",
+        "tags": ["foo", "bar", "search"],
+        "parameters": []
+      }
+    },
     "/foo/bar/list": {
       "get": {
-        "tags": ["foo", "bar", "list"],
+        "tags": ["foo", "bar", "list", "authenticated"],
         "parameters": []
       }
     },
