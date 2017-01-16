@@ -10,7 +10,7 @@ Requirements:
 
 # Usage
 
-This package is to be used as middleware for [Koa2](https://github.com/koajs/koa/tree/v2.x) to route paths definted in swagger documentation using `ctx.fleek.context` defined by [fleek-context](https://github.com/fleekjs/fleek-context) or an equivalent custom middleware.
+This package is to be used as middleware for [Koa2](https://github.com/koajs/koa/tree/v2.x) to route paths defined in swagger documentation using `ctx.fleek.context` defined by [fleek-context](https://github.com/fleekjs/fleek-context) or an equivalent custom middleware.
 
 ```
 npm install --save fleek-router
