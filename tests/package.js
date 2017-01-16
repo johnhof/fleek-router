@@ -1,6 +1,6 @@
 'use strict';
 
-const mocha = require('co-mocha');
+const mocha = require('mocha');
 const expect = require('chai').expect;
 
 const Router = require('../lib/router');
