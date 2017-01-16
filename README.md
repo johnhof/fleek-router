@@ -1,362 +1,230 @@
 # Fleek Router
 
-[![Build Status](https://travis-ci.org/fleekjs/fleek-router.svg)](https://travis-ci.org/fleekjs/fleek-router) [![npm](https://img.shields.io/npm/l/express.svg)](https://github.com/fleekjs/fleek-router/blob/master/LICENSE)  [![Dependencies](https://img.shields.io/david/fleekjs/fleek-router.svg)](https://david-dm.org/fleekjs/fleek-router) [![Join the chat at https://gitter.im/fleekjs/fleek-router](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/fleekjs/fleek-router?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://travis-ci.org/fleekjs/fleek-router.svg?branch=master)](https://travis-ci.org/fleekjs/fleek-router)
 
-Middleware router that merges swagger docs with matching controllers.
+Middleware for routing to controllers using [swagger](http://swagger.io/specification/) schema's.
 
-Quick reference:
-- Controllers for a route are determined by the first tag in the route+method docs
-  - `spaggerDoc.paths['/users'].get.tags[0]` -> controller name
-- Authentication is set per route by including an `authenticate` tag for the route+method
-  - `swaggerdoc.paths['/users/:id/edit'].tags = [fooController, authenticate]`
-- Validate is run on all routes
-  - Fleek has a build in validator matching inputs from the docs with inputs from the route. Custom validation can be used
+Requirements:
+- Node >= 6.0.0
+- [fleek-context](https://github.com/fleekjs/fleek-context)
 
+# Usage
 
-## Key
+This package is to be used as middleware for [Koa2](https://github.com/koajs/koa/tree/v2.x) to route paths definted in swagger documentation using `ctx.fleek.context` defined by [fleek-context](https://github.com/fleekjs/fleek-context) or an equivalent custom middleware.
 
-- [Usage](#usage)
-  - [Basic](#basic)
-  - [Fully Custom (paths)](#fully-custom-paths)
-  - [Fully Custom (objects)](#fully-custom-objects)
-  - [Koa on Fleek](#koa-on-fleek)
-- [Configuration](#configuration)
-  - [`config.versionPrefix`](#configversionprefix)
-  - [`config.languanePrefix`](#configlanguageprefix)
-  - [`config.basePath`](#configbasepath)
-  - [`config.swagger`](#configswagger)
-  - [`config.controllers`](#configcontrollers)
-  - [`config.authenticate`](#configauthenticate)
-  - [`config.validate`](#configvalidate)
-- [Reference Material](#reference-material)
-- [Authors](#authors)
-
-## Usage
-
-### Basic
-
-- Controllers are pulled from the `./controllers` directory
-- Swagger docs will be retrieved from `./api.json`, `/swagger.json`, `/config/api.json`, or `/config/swagger.json` in that order
-- [Full example](/examples/basic)
-
-```javascript
-var koa         = require('koa');
-var fleekRouter = require('fleek-router');
-var app = koa();
-
-fleekRouter(app);
-
-app.listen(3000);
+```
+npm install --save fleek-router
 ```
 
-### Fully Custom (paths)
+# Examples
 
-- Controllers are pulled from the `./custom/controllers` directory
-- Swagger docs are pulled from `./custom/docs.json`
-- [**TODO** Full example]()
+For a swagger example, refer to the test [swagger json](https://github.com/fleekjs/fleek-router/blob/master/tests/swagger.json)
 
 ```javascript
-var koa         = require('koa');
-var fleekRouter = require('fleek-router');
-var app = koa();
+const Koa = require('koa');
+const fleekCtx = require('fleek-context');
+const fleekRouter = require('fleek-router');
 
-fleekRouter(app, {
-  controllers : './controllers',
-  swagger      : './custom/docs.json'
-  authenicate : require('./some_auth_middleware'),
-  validate    : require('./some_val_middleware'),
-  response    : true
-});
+const SWAGGER = require('./swagger.json');
 
-app.listen(3000);
-```
+let app = new Koa();
 
-### Fully custom (objects)
+app.use(fleekCtx(SWAGGER));
 
-- Controllers are mapped to the object
-- Swagger docs are parsed from the object provided
-- [**TODO** Full example]()
+let router = fleekRouter({ controllers: `${__dirname}/controllers` });
 
-```javascript
-var koa         = require('koa');
-var fleekRouter = require('fleek-router');
-var app = koa();
+ctx.use(router.tag('authenticated', (ctx, next) => {
+  if (someAuthFunction(ctx)) {
+    ctx.body = 'Not authorized';
+    ctx.status = 401;
+    return Promise.resolve();
+  } else return next();
+}))
 
-fleekRouter(app, {
-  authenicate : require('./some/auth/middleware'),
-  validate    : require('./some/val/middleware'),
-  swagger      : require('./some/swagger/generator')(),
-  controllers : {
-    foo : function () {
-      this.body = { success: true };
+app.use(router.controllers({
+  controller: {
+    bar: {
+      get: (ctx, next) => { /* routes for tags ['bar', ...] and method GET */ },
+    },
+    foo: {
+      biz: {
+        post: (ctx, next) => { /* routes for tags ['foo', 'biz' ...] and method POST */ }
+      }
     }
-  }
-});
-
-app.listen(3000);
-```
-
-### Koa on fleek
-
-- Controllers are pulled from the `./controllers` directory
-- Swagger docs will be retrieved from `./api.json`, `/swagger.json`, `/config/api.json`, or `/config/swagger.json` in that order
-- validate and authenticate will use the fleek middleware
-- [**TODO** Full example]()
-
-```javascript
-var koa         = require('koa');
-var fleekRouter = require('fleek-router');
-var app = koa();
-
-fleekRouter(app, {
-  authenicate : true,
-  validate    : { // powered by fleek-validator
-    error : function *(err, next) {
-      this.body = 'uh oh! validation failed',
-      console.log(err);
-    }
-  }
-});
-
-app.listen(3000);
-```
-
-## Configuration
-
-
-### config.versionPrefix
-
-#### [optional]
-
-#### summary
-
-- adds a version prefix
-
-#### accepts
-
-- `String` - use the string passed in as the prefix
-- `Boolean` - if true, use the `version_prefix` property from the swagger docs
-
-```javascript
-config.versionPrefix = 'v1';
-// OR
-config.versionPrefix = true;
-```
-
-
-### config.languagePrefix
-
-#### [optional]
-
-#### summary
-
-- adds a version prefix
-
-#### accepts
-
-- `String` - use the string passed in as the prefix
-- `Boolean` - if true, use the `language_prefix` property from the swagger docs
-
-```javascript
-config.languagePrefix = 'en';
-// OR
-config.languagePrefix = true;
-```
-
-### config.basePath
-
-#### [optional]
-
-#### summary
-
-- adds a version prefix
-
-#### accepts
-
-- `String` - use the string passed in as the prefix
-- `Boolean` - if true, use the `basePath` property from the swagger docs
-
-```javascript
-config.basePath = 'v1/en';
-// OR
-config.basePath = true;
-```
-
-
-### config.swagger
-
-#### [optional]
-
-#### summary
-
-- sets the swagger documentation source for compiling routes.
-
-#### accepts
-
-- `Object` - javascript object mapping to the swagger doc format exactly
-- `String` - path to the swagger json file (relative or absolute)
-- `Undefined` - attempts to find the config in the following places `./api.json`, `./swagger.json`, `./config/api.json`, and `./config/swagger.json`
-
-```javascript
-config.swagger = undefined; // attempts to resolve internally
-// OR
-config.swagger = './some/relative/swag.json';
-// OR
-config.swagger = '/some/absolute/swagger.json';
-// OR
-config.swagger = require('./a/function/returning/swag')();
-```
-
-
-### config.controllers
-
-#### [optional]
-
-#### summary
-
-- sets the controllers used to map routes from the swagger documentation
-- **controllers are mapped using the first element in the `tag` array of the route+method documenation**
-- nested controllers are allowed, but must be `.` delimited in the tag
-
-
-#### accepts
-
-- `Object` - javascript object of controllers
-- `String` - path to the controllers directory (relative or absolute)
-- `Undefined` - defaults to
-
-```javascript
-config.controllers = undefined; // defaults to ./controllers
-// OR
-config.controllers = './some/relative/controllers';
-// OR
-config.controllers = '/some/absolute/controllers';
-// OR
-config.controllers = {
-  foo : function *() {}, // maps to `foo` tag
-  bar : {
-    biz : function *() {} // maps to `bar.biz` tag
-  }
-};
-```
-
-### config.authenticate
-
-#### [optional]
-
-#### summary
-
-- sets the authentication method for the secured routes
-- **applies to any route with the `authenticate` tag**
-
-#### accepts
-
-- `Function` - function to use for authentication
-- `Boolean` - if true, use the `fluent-authenticate` middleware
-
-```javascript
-config.authenticate = true; // use `fluent-authenticate`
-// OR
-config.authenticate = function *(next) {
-  var isAuth = someAuthCheck(this);
-  if (isAuth) {
-    yield next;
-  } else {
-    this.status = 401;
-    this.body   = 'Not Authorized';
-  }
-}
-```
-
-
-### config.validate
-
-#### [optional]
-
-#### summary
-
-- sets the validation method
-
-#### accepts
-
-- `Function` - function to use for validation
-- `Boolean` - if true, use the `fluent-validate` middleware
-
-```javascript
-config.validate = true; // use `fluent-validate`
-// OR
-config.validate = function *(next) {
-  var valid = true;
-
-  if (this.pathname === '/') {
-    valid = someValidator.rooValidate(this);
-
-  } else if (this.pathname === 'user') {
-    valid  = someValidator.userValidator(this);
-  }
-
-  if (valid) {
-    yield next;
-  } else {
-    this.status = 400;
-    this.body   = 'Invalid data Submitted'
-  }
-}
-```
-
-### config.middleware
-
-#### [optional]
-
-#### summary
-
-- middleware to fire before the controller
-- used to make changes for every request after all fleek middleware has fired
-
-#### accepts
-
-- `Function*` - function to execute
-- `Array` - array of functions to execture in order
-
-```javascript
-config.middleware = function *(next) {
-  console.log('Route middleware passed!');
-  console.log('Executing controller: ' + this.routeConfig.controller);
-  yield next;
-}
-
-// OR
-
-config.middleware = [
-  function *(next) {
-    console.log('1');
-    yield next;
   },
-  function *(next) {
-    console.log('2');
-    yield next;
+  operation: {
+    createBar: (ctx, next) => { /* routes for operationId 'createBar' */ }
   }
-]
+}));
+
+// OR
+
+app.use(router.controllers(`${__driname}/controllers`));
+// TO MATCH EXAMPLE ABOVE:
+// controllers/
+//  ├── bar.js [exports: get(ctx, next)]
+//  ├── foo
+//  |    └── biz.js [exports: post(ctx, next)]
+//  └── */** [exports: createBar(ctx, next)]
+
+app.listen(3000);
+```
+
+# Documentation
+
+## new Router()
+
+- Accepts
+  - Object - options
+- Returns
+  - Router - returns a promise when called
+
+### Example
+
+```javascript
+let myRouter = new fleekRouter.Router();
 
 ```
 
-## Reference Material
+## Router.tag(name, operation)
 
-#### Swagger
+- Accepts
+  - String - name of the tag to operate against. if the tag name is present in the request `ctx.fleek.context.tags[]`, the operation will be executed
+- Returns
+  - Function - returns a promise when called
+    - Accepts
+      - Object - `ctx`(context) of the request
+      - Function - `next` returns promise when called
 
-- [Home](http://swagger.io/)
-- [Editor Demo](http://editor.swagger.io/)
-- [Documentation](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md)
+### Example
 
-#### By the authors
+```javascript
+app.use(router.tag('authenticated', (ctx, next) => {
+  console.log(ctx.fleek.context.tags) // => [ ..., 'authenticated', ... ]
+  let isAuthenticated = someAuthFunction(ctx);
+  if (isAuthenticated) return next();
+  else return Promise.reject(Error('401: not authorized'));
+}));
 
-- [Hart Engineering](http://engineering.hart.com/)
+app.use((ctx, next) => {
+  ctx.body = 'passed authentication';
+  return Promise.resolve();
+})
+```
 
+
+## Router.operation(operationId, operation)
+
+- Accepts
+  - String - name of the tag to route to. if the tag name is present in the request `ctx.fleek.context.operationId`, the operation will be executed
+- Returns
+  - Function - returns a promise when called
+    - Accepts
+      - Object - `ctx`(context) of the request
+      - Function - `next` returns promise when called
+
+### Example
+
+```javascript
+app.use(router.tag('getUser', (ctx, next) => {
+  console.log(ctx.fleek.context.operationId) // => 'getUser'
+  ctx.body = DB.get('user', ctx.params.user_id);
+  return Promise.resolve();
+}));
+```
+
+
+## Router.controllers(options) - Controller Directory
+
+- Accepts
+  - One of
+    - String - path to controllers directory. Directory will be recursively read to create an object of controllers and operations
+    - Object - options or list object of controllers and operations
+      - Contains One of
+- Returns
+  - Function - returns a promise when called
+    - Accepts
+      - Object - context of the request. must have `ctx.fleek.context` to perform validation
+      - Function - returns promise when called
+- Functionality
+  - The directory tree being parsed must contain flat or sud-directy `.js` files exporting operation functions
+  - To execute a operation, the request `ctx.fleek.context` must contain data mapping it to the controller/operation
+  - Routing:
+    - Controllers:
+      - To execute a method(`POST`, `GET`, `PUT`, `DELETE`), the swagger documentation must specify the controller as the first tag(`tags: []`) for the path+method
+      - Every sub-directory or file name adds an expected tag to the required `ctx.fleek.context.tags[]` to route to the given operation
+        - EG: `controllers/foo/bar.js[get(ctx, next) => { ... }]` will  execute for `ctx.fleek.context = { method: 'get', tags: ['foo', 'bar'] }`
+    - Operations:
+      - Operations are identified by the name of the exported function(`module.exports[operationId]`), if it does not match a method type (`POST`, `GET`, `PUT`, `DELETE`)
+      - To execute an operation, the swagger document must specify the `operationId` in the path+method configuration to match the exported function name
+      - Operations are prioritized over controllers when routing
+      - Operation ID's are unique accross all controllers and operations, as speficied in the swagger 2.0 standard
+
+
+### Example
+
+```javascript
+// Assuming directory structure:
+// controllers/
+//  ├── bar.js [exports: get(ctx, next) => { ... }]
+//  ├── foo
+//  |    └── biz.js [exports: post(ctx, next) => { ... }]
+//  └── */** [exports: createBar(ctx, next) => { ... }]
+
+app.use(router.controllers(`${__dirname}/controllers`));
+
+// OR
+
+app.use(router.controllers({ path: `${__dirname}/controllers` }));
+```
+
+## Router.controllers(controllers) - Controller Object
+
+- Accepts
+  - Object - object of controllers and operations
+    - At least one of
+      - `controller`: Object - shallow or nested controllers, containg method operations (`post|create`, `get|read`, `put|update`, `delete|destroy`)`
+      - `operation`: Object - shallow operations. propery keys expected to map to `operationId`
+- Returns
+  - Function - returns a promise when called
+    - Accepts
+      - Object - context of the request. must have `ctx.fleek.context` to perform validation
+      - Function - returns promise when called
+- Functionality
+  - NOTE: the expected parameter object is also the compiled format of the directory system listed above
+  - To execute a operation, the request `ctx.fleek.context` must contain data mapping it to the controller/operation
+  - Routing:
+    - Controllers:
+      - To execute a method(`POST`, `GET`, `PUT`, `DELETE`), the swagger documentation must specify the controller as the first tag(`tags: []`) for the path+method
+      - Every nested property adds an expected tag to the required `ctx.fleek.context.tags[]` to route to the given operation
+        - EG: `controller.foo.bar.get: (ctx, next) => { ... }` will  execute for `ctx.fleek.context = { method: 'get', tags: ['foo', 'bar'] }`
+    - Operations:
+      - Operations are identified by the name of the exported function(`module.exports[operationId]`), if it does not match a method type (`POST`, `GET`, `PUT`, `DELETE`)
+      - To execute an operation, the swagger document must specify the `operationId` in the path+method configuration to match the exported function name
+      - Operations are prioritized over controllers when routing
+      - Operation ID's are unique accross all controllers and operations, as speficied in the swagger 2.0 standard
+
+
+### Example
+
+```javascript
+app.use(router.controllers({
+  controller: {
+    bar: get(ctx, next) => { /* ... */ },
+    foo: {
+      biz: {
+        post: (ctx, next) => { /* ... */ }
+      }
+    }
+  },
+  operation: {
+    createBar: (ctx, next) => { /* ... */ }
+  }
+}));
+```
 
 ## Authors
 
 - [John Hofrichter](https://github.com/johnhof)
-- [Peter A. Tariche](https://github.com/ptariche)
-- [Lan Nguyen](https://github.com/lan-nguyen91)
 
 _Built and maintained with [<img width="15px" src="http://hart.com/wp-content/themes/hart/img/hart_logo.svg">](http://hart.com/) by the [Hart](http://hart.com/) team._
